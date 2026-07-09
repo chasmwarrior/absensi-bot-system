@@ -96,7 +96,6 @@ server {
             rewrite ^(.*)$ $1.php last;
         }
     }
-    }
 
     # Block direct access to certain directories
     location ^~ /app/ {

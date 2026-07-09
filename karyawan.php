@@ -219,3 +219,21 @@ if (isset($_POST['import_data'])) {
 include "inc/modals.php"; 
 include "inc/footer.php"; 
 ?>
+<script>
+function konfirmasiHapusSemua() {
+    Swal.fire({
+        title: 'Hapus SEMUA Data?',
+        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus Semua!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'karyawan?hapus_semua=1';
+        }
+    });
+}
+</script>
