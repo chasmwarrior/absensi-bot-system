@@ -86,12 +86,16 @@ server {
     # Rewrite rules similar to .htaccess
     location @rewrite {
         # Redirect /home to index.php
-        rewrite ^/home$ /index.php last;
+        rewrite ^/home/?$ /index.php last;
 
-        # If file exists as .php, rewrite to it (removes need for .php extension in URLs)
-        if (-f \$document_root\$uri.php) {
-            rewrite ^(.*)$ \$1.php last;
+        # Remove trailing slash to check if .php exists
+        rewrite ^/(.*)/$ /$1;
+
+        # If file exists as .php, rewrite to it
+        if (-f $document_root$uri.php) {
+            rewrite ^(.*)$ $1.php last;
         }
+    }
     }
 
     # Block direct access to certain directories

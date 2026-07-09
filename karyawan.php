@@ -23,25 +23,7 @@ if (isset($_POST['tambah'])) {
 
     $check = $db->query("SELECT nik FROM karyawan WHERE nik = '$nik' OR no_hp = '$no_hp' LIMIT 1");
     if ($check->num_rows > 0) {
-        echo "<script>window.location.href='?status=ganda_total&msg=" . urlencode("NIK atau Nomor HP sudah terdaftar!") . "';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+        echo "<script>window.location.href='?status=ganda_total&msg=" . urlencode("NIK atau Nomor HP sudah terdaftar!") . "';</script>";
         exit;
     }
 
@@ -49,25 +31,7 @@ function konfirmasiHapusSemua() {
     $stmt->bind_param("sss", $nik, $nama, $no_hp);
     
     if ($stmt->execute()) {
-        echo "<script>window.location.href='?status=sukses';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+        echo "<script>window.location.href='?status=sukses';</script>";
         exit;
     }
 }
@@ -79,25 +43,7 @@ if (isset($_POST['update'])) {
 
     $check = $db->query("SELECT nik FROM karyawan WHERE no_hp = '$no_hp' AND nik != '$nik_lama' LIMIT 1");
     if ($check->num_rows > 0) {
-        echo "<script>window.location.href='?status=ganda_total&msg=" . urlencode("Nomor HP tersebut sudah digunakan karyawan lain!") . "';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+        echo "<script>window.location.href='?status=ganda_total&msg=" . urlencode("Nomor HP tersebut sudah digunakan karyawan lain!") . "';</script>";
         exit;
     }
 
@@ -105,25 +51,7 @@ function konfirmasiHapusSemua() {
     $stmt->bind_param("sss", $nama, $no_hp, $nik_lama);
     
     if ($stmt->execute()) {
-        echo "<script>window.location.href='?status=update';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+        echo "<script>window.location.href='?status=update';</script>";
         exit;
     }
 }
@@ -132,25 +60,7 @@ function konfirmasiHapusSemua() {
 if (isset($_GET['hapus_semua'])) {
     $db->query("DELETE FROM karyawan");
     $db->query("ALTER TABLE karyawan AUTO_INCREMENT = 1");
-    echo "<script>window.location.href='karyawan?status=reset';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+    echo "<script>window.location.href='karyawan?status=reset';</script>";
     die;
 }
 
@@ -160,25 +70,7 @@ if (isset($_GET['hapus'])) {
     $stmt->bind_param("s", $nik);
     
     if ($stmt->execute()) {
-        echo "<script>window.location.href='?status=hapus';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+        echo "<script>window.location.href='?status=hapus';</script>";
         exit;
     }
 }
@@ -232,87 +124,15 @@ if (isset($_POST['import_data'])) {
                     $stmt->execute();
                 }
                 $db->commit();
-                echo "<script>window.location.href='karyawan?status=import_sukses&jumlah=" . count($data_import) . "';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+                echo "<script>window.location.href='karyawan?status=import_sukses&jumlah=" . count($data_import) . "';</script>";
             } catch (Exception $e) {
                 $db->rollback();
-                echo "<script>window.location.href='karyawan?status=error&msg=Gagal menyimpan ke database';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+                echo "<script>window.location.href='karyawan?status=error&msg=Gagal menyimpan ke database';</script>";
             }
         } else if (!empty($pesan_error)) {
-            echo "<script>window.location.href='karyawan?status=ganda_total&msg=" . urlencode($pesan_error) . "';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+            echo "<script>window.location.href='karyawan?status=ganda_total&msg=" . urlencode($pesan_error) . "';</script>";
         } else {
-            echo "<script>window.location.href='karyawan?status=error&msg=File CSV kosong atau tidak valid';
-function konfirmasiHapusSemua() {
-    Swal.fire({
-        title: 'Hapus SEMUA Data?',
-        text: "Semua data karyawan akan dihapus selamanya. Anda tidak dapat mengembalikan ini!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus Semua!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'karyawan?hapus_semua=1';
-        }
-    });
-}
-
-</script>";
+            echo "<script>window.location.href='karyawan?status=error&msg=File CSV kosong atau tidak valid';</script>";
         }
         exit;
     }
