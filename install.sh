@@ -1,18 +1,16 @@
 #!/bin/bash
-# Auto Installer for Absensi Bot System on Ubuntu
+# Auto Installer for Absensi Bot System on Ubuntu (Nginx)
 
 set -e
 
 echo "==============================================="
-echo "   ABSENSI BOT SYSTEM AUTO INSTALLER (UBUNTU)  "
+echo "   ABSENSI BOT SYSTEM AUTO INSTALLER (NGINX)   "
 echo "==============================================="
 echo ""
 
 echo "[1/8] Cleaning up previous installations (Fresh Install)..."
-# Start DB services to ensure we can drop the database
 systemctl start mariadb 2>/dev/null || systemctl start mysql 2>/dev/null || true
 
-# Remove previous web directory
 WEB_DIR="/var/www/html/absensi"
 if [ -d "$WEB_DIR" ]; then
     echo "Removing previous web directory $WEB_DIR..."
@@ -29,18 +27,22 @@ echo "[2/8] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 
-echo "[3/8] Installing Apache, PHP, MariaDB, and required extensions..."
-# Stop Nginx if it is running to free port 80
-if systemctl is-active --quiet nginx; then
-    echo "Stopping Nginx to free port 80 for Apache..."
-    systemctl stop nginx
-    systemctl disable nginx
+echo "[3/8] Installing Nginx, PHP-FPM, MariaDB, and required extensions..."
+# Stop Apache if it is running to free port 80
+if systemctl is-active --quiet apache2; then
+    echo "Stopping Apache to free port 80 for Nginx..."
+    systemctl stop apache2
+    systemctl disable apache2
 fi
 
-apt-get install -y apache2 mariadb-server php libapache2-mod-php php-mysql php-cli php-curl php-json php-mbstring unzip git
+# We use php-fpm for Nginx. Assuming Ubuntu 22.04 defaults to php8.1-fpm
+apt-get install -y nginx mariadb-server php-fpm php-mysql php-cli php-curl php-json php-mbstring unzip git
+
+# Find installed PHP version dynamically (e.g. 8.1)
+PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
+echo "Detected PHP version: $PHP_VER"
 
 echo "[4/8] Configuring Database..."
-# Ensure MariaDB service is running
 systemctl start mariadb || service mysql start || true
 systemctl enable mariadb || true
 
@@ -51,31 +53,91 @@ echo "[5/8] Deploying application files..."
 echo "Copying files to $WEB_DIR..."
 mkdir -p $WEB_DIR
 cp -r * $WEB_DIR/
-cp -r .htaccess $WEB_DIR/ 2>/dev/null || true
 
 echo "[6/8] Importing Database Schema..."
 if [ -f "$WEB_DIR/db/absensi_chatbot.sql" ]; then
-    # Fix collation issue in MariaDB by replacing utf8mb4_0900_ai_ci with utf8mb4_unicode_ci
     sed -i 's/utf8mb4_0900_ai_ci/utf8mb4_unicode_ci/g' "$WEB_DIR/db/absensi_chatbot.sql"
     mysql -u root $DB_NAME < $WEB_DIR/db/absensi_chatbot.sql || echo "Failed to import SQL. Check your DB root credentials."
 else
     echo "Database SQL file not found at $WEB_DIR/db/absensi_chatbot.sql"
 fi
 
-echo "[7/8] Setting correct permissions..."
+echo "[7/8] Configuring Nginx..."
+NGINX_CONF="/etc/nginx/sites-available/absensi"
+cat <<EOL > $NGINX_CONF
+server {
+    listen 80;
+    server_name _;
+    root /var/www/html/absensi;
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ @rewrite;
+    }
+
+    # Rewrite rules similar to .htaccess
+    location @rewrite {
+        # Redirect /home to index.php
+        rewrite ^/home$ /index.php last;
+
+        # If file exists as .php, rewrite to it (removes need for .php extension in URLs)
+        if (-f $document_root$uri.php) {
+            rewrite ^(.*)$ $1.php last;
+        }
+    }
+
+    # Block direct access to certain directories
+    location ^~ /app/ {
+        # Allow webhooks
+        location ~* (webhook_telegram\.php|webhook_whatsapp\.php)$ {
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
+        }
+        deny all;
+    }
+
+    location ^~ /inc/ {
+        deny all;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Block access to hidden files like .htaccess and config files
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+    location ~ ^/(config\.php|koneksi\.php)$ {
+        deny all;
+    }
+}
+EOL
+
+# Enable site and disable default if necessary
+ln -sf $NGINX_CONF /etc/nginx/sites-enabled/
+# We can remove default site to avoid conflict on port 80 if necessary, but absensi is on / (root) so we probably should.
+rm -f /etc/nginx/sites-enabled/default
+
+# Fix permissions
 chown -R www-data:www-data $WEB_DIR
 chmod -R 755 $WEB_DIR
 
-echo "[8/8] Restarting Apache..."
-systemctl restart apache2 || true
+echo "[8/8] Restarting Nginx and PHP-FPM..."
+systemctl restart php${PHP_VER}-fpm
+systemctl restart nginx
 
 echo "==============================================="
 echo "   INSTALLATION COMPLETE!                      "
 echo "==============================================="
-# Output IP properly
 IP_ADDR=$(hostname -I | awk '{print $1}')
 echo "You can now access the system at:"
-echo "http://${IP_ADDR}/absensi"
+echo "http://${IP_ADDR}/"
+echo ""
+echo "Note: The app is now hosted directly at the domain root (http://domain.com/) instead of /absensi to ensure clean URL routing works perfectly with Nginx."
 echo ""
 echo "Default Login:"
 echo "Username: admin"
