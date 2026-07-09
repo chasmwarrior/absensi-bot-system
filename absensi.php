@@ -21,7 +21,10 @@ if (isset($_POST['update_absensi'])) {
     $tgl      = $_POST['tanggal'];
     $masuk    = $_POST['jam_masuk'] ?: null;
     $keluar   = $_POST['jam_keluar'] ?: null;
+
     $ket      = $_POST['keterangan'];
+    $is_manual = isset($_POST['is_manual']) ? 1 : 0;
+    $is_darurat = isset($_POST['is_darurat']) ? 1 : 0;
 
     $user_lat = $_POST['user_lat'] ?? null;
     $user_lng = $_POST['user_lng'] ?? null;
@@ -40,15 +43,19 @@ if (isset($_POST['update_absensi'])) {
     $exists = $check->get_result()->num_rows > 0;
 
     if ($exists) {
-        $sql = "UPDATE absensi SET jam_masuk = ?, jam_keluar = ?, keterangan = ?, lokasi = ?, jarak = ? WHERE nik = ? AND tanggal = ?";
+        $sql = "UPDATE absensi SET jam_masuk = ?, jam_keluar = ?, keterangan = ?, lokasi = ?, jarak = ?, is_manual = ?, is_darurat = ? WHERE nik = ? AND tanggal = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("sssssiiss", $masuk, $keluar, $ket, $lokasi, $distance, $is_manual, $is_darurat, $nik, $tgl);
     } else {
-        $sql = "INSERT INTO absensi (jam_masuk, jam_keluar, keterangan, lokasi, jarak, nik, tanggal) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO absensi (jam_masuk, jam_keluar, keterangan, lokasi, jarak, is_manual, is_darurat, nik, tanggal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $stmt->bind_param("sssssiiss", $masuk, $keluar, $ket, $lokasi, $distance, $is_manual, $is_darurat, $nik, $tgl);
     }
 
-    $stmt = $db->prepare($sql);
-    $stmt->bind_param("sssssss", $masuk, $keluar, $ket, $lokasi, $distance, $nik, $tgl);
-    
     if ($stmt->execute()) {
+        require_once "inc/calculator.php";
+        hitungDendaAbsensi($db, $nik, $tgl);
+
         echo "<script>window.location.href='absensi?tanggal=$tgl&status=update';</script>";
         exit;
     }
@@ -114,7 +121,7 @@ $badge = [
     'tanpa keterangan' => 'danger', 
 ];
 
-$sql_log = "SELECT k.nik, k.nama, a.jam_masuk, a.jam_keluar, a.keterangan, a.lokasi, a.jarak
+$sql_log = "SELECT k.nik, k.nama, a.jam_masuk, a.jam_keluar, a.keterangan, a.lokasi, a.jarak, a.denda, a.is_manual, a.is_darurat, a.potong_libur
             FROM karyawan k
             LEFT JOIN absensi a ON k.nik = a.nik AND a.tanggal = ?
             WHERE k.status = 'aktif'";
@@ -189,7 +196,7 @@ $res_log = $stmt_l->get_result();
                                 <th>Nama</th>
                                 <th width="100">Masuk</th>
                                 <th width="100">Keluar</th>
-                                <th width="150">Status</th>
+                                <th width="150">Status</th><th width="100">Denda</th>
                                 <th width="80">Lokasi</th>
                                 <th width="120">Jarak</th>
                                 <th width="120">Aksi</th>
@@ -212,7 +219,13 @@ $res_log = $stmt_l->get_result();
                                 <td class="text-center">
                                     <span class="badge badge-<?= $badge[strtolower($row['keterangan'])] ?? 'secondary' ?>">
                                         <?= strtoupper($row['keterangan'] ?: 'Belum Absen') ?>
-                                    </span>
+                                    </span><br>
+                                    <?php if(isset($row['is_manual']) && $row['is_manual']) echo '<span class="badge badge-info">MANUAL</span>'; ?>
+                                    <?php if(isset($row['is_darurat']) && $row['is_darurat']) echo '<span class="badge badge-warning">DARURAT</span>'; ?>
+                                </td>
+                                <td class="text-center text-danger font-weight-bold">
+                                    <?= (isset($row['denda']) && $row['denda'] > 0) ? "Rp " . number_format($row['denda'],0,",",".") : "-" ?>
+                                    <?= (isset($row['potong_libur']) && $row['potong_libur']) ? "<br><small class='text-danger'>(Potong Libur)</small>" : "" ?>
                                 </td>
                                 <td class="text-center">
                                     <?php if($row['lokasi'] && $row['lokasi'] != "-"): ?>
@@ -228,7 +241,15 @@ $res_log = $stmt_l->get_result();
                                             data-nama="<?= htmlspecialchars($row['nama']) ?>"
                                             data-masuk="<?= $row['jam_masuk'] ?>"
                                             data-keluar="<?= $row['jam_keluar'] ?>"
-                                            data-ket="<?= $row['keterangan'] ?>">
+
+                                            data-nik="<?= $row['nik'] ?>"
+                                            data-nama="<?= htmlspecialchars($row['nama']) ?>"
+                                            data-masuk="<?= $row['jam_masuk'] ?>"
+                                            data-keluar="<?= $row['jam_keluar'] ?>"
+                                            data-ket="<?= $row['keterangan'] ?>"
+                                            data-manual="<?= $row['is_manual'] ?? 0 ?>"
+                                            data-darurat="<?= $row['is_darurat'] ?? 0 ?>">
+
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="btn btn-sm btn-danger shadow-sm" onclick="konfirmasiReset('<?= $row['nik'] ?>', '<?= $selected_date ?>')">
@@ -267,15 +288,29 @@ $res_log = $stmt_l->get_result();
                         <label>Jam Keluar</label>
                         <input type="time" name="jam_keluar" id="edit_keluar" class="form-control">
                     </div>
-                    <div class="form-group">
-                        <label>Keterangan</label>
-                        <select name="keterangan" id="edit_ket" class="form-control" required>
-                            <option value="hadir">HADIR</option>
-                            <option value="sakit">SAKIT</option>
-                            <option value="izin">IZIN</option>
-                            <option value="tanpa keterangan">TANPA KETERANGAN</option>
-                        </select>
-                    </div>
+
+                        <div class="form-group">
+                            <label>Keterangan</label>
+                            <select name="keterangan" id="edit_ket" class="form-control" required>
+                                <option value="hadir">HADIR</option>
+                                <option value="sakit">SAKIT</option>
+                                <option value="izin">IZIN</option>
+                                <option value="tanpa keterangan">TANPA KETERANGAN</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox" id="edit_manual" name="is_manual" value="1">
+                                <label for="edit_manual" class="custom-control-label">Absen Manual (Khusus Darurat/Kurir)</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox" id="edit_darurat" name="is_darurat" value="1">
+                                <label for="edit_darurat" class="custom-control-label">Gunakan Jatah Darurat Pribadi (Bebas Denda)</label>
+                            </div>
+                        </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -305,12 +340,18 @@ $(document).ready(function() {
         const nama = $(this).data('nama');
         const masuk = $(this).data('masuk');
         const keluar = $(this).data('keluar');
+
         const ket = $(this).data('ket');
+        const manual = $(this).data('manual');
+        const darurat = $(this).data('darurat');
 
         $('#edit_nik').val(nik);
         $('#display_nama').text(nama);
         $('#edit_keluar').val(keluar && keluar !== '-' ? keluar : '');
         $('#edit_ket').val(ket || 'hadir');
+        $('#edit_manual').prop('checked', manual == 1);
+        $('#edit_darurat').prop('checked', darurat == 1);
+
 
         if (!masuk || masuk === '-' || masuk === '00:00:00') {
             const sekarang = new Date();
