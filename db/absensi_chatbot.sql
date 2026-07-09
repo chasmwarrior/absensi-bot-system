@@ -37,7 +37,7 @@ CREATE TABLE `absensi` (
   `jarak` decimal(8,2) DEFAULT NULL,
   `keterangan` enum('hadir','sakit','izin','tanpa keterangan') NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -53,7 +53,7 @@ CREATE TABLE `karyawan` (
   `telegram_id` varchar(50) DEFAULT NULL,
   `status` enum('aktif','nonaktif') DEFAULT 'aktif',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data untuk tabel `karyawan`
@@ -117,8 +117,8 @@ INSERT INTO `karyawan` (`id`, `nik`, `nama`, `no_hp`, `telegram_id`, `status`, `
 
 CREATE TABLE `sistem` (
   `id` int NOT NULL,
-  `webhook_url` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `whatsapp_token` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `webhook_url` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `whatsapp_token` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `telegram_token` varchar(100) NOT NULL,
   `autorecord` varchar(20) NOT NULL,
   `time` varchar(20) NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE `sistem` (
   `longitude` varchar(100) NOT NULL,
   `wa_status` enum('ON','OFF') DEFAULT 'ON',
   `tg_status` enum('ON','OFF') DEFAULT 'ON'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data untuk tabel `sistem`
@@ -147,7 +147,7 @@ CREATE TABLE `state` (
   `tanggal` date NOT NULL,
   `step` enum('minta_lokasi_masuk') NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -160,7 +160,7 @@ CREATE TABLE `users` (
   `name` varchar(50) NOT NULL,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data untuk tabel `users`

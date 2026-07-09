@@ -13,6 +13,13 @@ apt-get update -y
 apt-get upgrade -y
 
 echo "[2/7] Installing Apache, PHP, MariaDB, and required extensions..."
+# Stop Nginx if it is running to free port 80
+if systemctl is-active --quiet nginx; then
+    echo "Stopping Nginx to free port 80 for Apache..."
+    systemctl stop nginx
+    systemctl disable nginx
+fi
+
 apt-get install -y apache2 mariadb-server php libapache2-mod-php php-mysql php-cli php-curl php-json php-mbstring unzip git
 
 echo "[3/7] Configuring Database..."
@@ -33,9 +40,10 @@ mkdir -p $WEB_DIR
 cp -r * $WEB_DIR/
 cp -r .htaccess $WEB_DIR/ 2>/dev/null || true
 
-
 echo "[5/7] Importing Database Schema..."
 if [ -f "$WEB_DIR/db/absensi_chatbot.sql" ]; then
+    # Fix collation issue in MariaDB by replacing utf8mb4_0900_ai_ci with utf8mb4_unicode_ci
+    sed -i 's/utf8mb4_0900_ai_ci/utf8mb4_unicode_ci/g' "$WEB_DIR/db/absensi_chatbot.sql"
     mysql -u root $DB_NAME < $WEB_DIR/db/absensi_chatbot.sql || echo "Failed to import SQL. Check your DB root credentials."
 else
     echo "Database SQL file not found at $WEB_DIR/db/absensi_chatbot.sql"
