@@ -134,6 +134,11 @@ rm -f /etc/nginx/sites-enabled/default
 chown -R www-data:www-data $WEB_DIR
 chmod -R 755 $WEB_DIR
 
+
+echo "[7.5/8] Updating inc/config.php with new database credentials..."
+sed -i "s/define('DB_USER', '.*');/define('DB_USER', '${DB_APP_USER}');/g" $WEB_DIR/inc/config.php
+sed -i "s/define('DB_PASS', '.*');/define('DB_PASS', '${DB_APP_PASS}');/g" $WEB_DIR/inc/config.php
+
 echo "[8/8] Restarting Nginx and PHP-FPM..."
 systemctl restart php${PHP_VER}-fpm
 nginx -t
