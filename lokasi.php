@@ -117,8 +117,72 @@ include "inc/modals.php";
 include "inc/footer.php"; 
 ?>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+function getLocation() {
+    if (navigator.geolocation) {
+        Swal.fire({
+            title: 'Mencari lokasi...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lng').value = position.coords.longitude;
+
+            // Update map marker if leaflet is available
+            if (typeof marker !== 'undefined' && typeof map !== 'undefined') {
+                var newLatLng = new L.LatLng(position.coords.latitude, position.coords.longitude);
+                marker.setLatLng(newLatLng);
+                map.setView(newLatLng, 16);
+            }
+
+            Swal.close();
+            Swal.fire('Berhasil', 'Lokasi berhasil didapatkan.', 'success');
+        }, function(error) {
+            Swal.close();
+            Swal.fire('Gagal', 'Gagal mendapatkan lokasi: ' + error.message, 'error');
+        }, { enableHighAccuracy: true });
+    } else {
+        Swal.fire('Error', 'Geolocation tidak didukung oleh browser ini.', 'error');
+    }
+}
+</script>
+
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js">
+function getLocation() {
+    if (navigator.geolocation) {
+        Swal.fire({
+            title: 'Mencari lokasi...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lng').value = position.coords.longitude;
+
+            // Update map marker if leaflet is available
+            if (typeof marker !== 'undefined' && typeof map !== 'undefined') {
+                var newLatLng = new L.LatLng(position.coords.latitude, position.coords.longitude);
+                marker.setLatLng(newLatLng);
+                map.setView(newLatLng, 16);
+            }
+
+            Swal.close();
+            Swal.fire('Berhasil', 'Lokasi berhasil didapatkan.', 'success');
+        }, function(error) {
+            Swal.close();
+            Swal.fire('Gagal', 'Gagal mendapatkan lokasi: ' + error.message, 'error');
+        }, { enableHighAccuracy: true });
+    } else {
+        Swal.fire('Error', 'Geolocation tidak didukung oleh browser ini.', 'error');
+    }
+}
+</script>
+
 
 <script>
     $(document).ready(function() {
@@ -167,4 +231,35 @@ include "inc/footer.php";
         marker.setLatLng(e.latlng);
         updateInput(e.latlng.lat, e.latlng.lng);
     });
+
+function getLocation() {
+    if (navigator.geolocation) {
+        Swal.fire({
+            title: 'Mencari lokasi...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
+            }
+        });
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lng').value = position.coords.longitude;
+
+            // Update map marker if leaflet is available
+            if (typeof marker !== 'undefined' && typeof map !== 'undefined') {
+                var newLatLng = new L.LatLng(position.coords.latitude, position.coords.longitude);
+                marker.setLatLng(newLatLng);
+                map.setView(newLatLng, 16);
+            }
+
+            Swal.close();
+            Swal.fire('Berhasil', 'Lokasi berhasil didapatkan.', 'success');
+        }, function(error) {
+            Swal.close();
+            Swal.fire('Gagal', 'Gagal mendapatkan lokasi: ' + error.message, 'error');
+        }, { enableHighAccuracy: true });
+    } else {
+        Swal.fire('Error', 'Geolocation tidak didukung oleh browser ini.', 'error');
+    }
+}
 </script>

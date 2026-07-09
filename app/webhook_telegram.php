@@ -130,6 +130,8 @@ if ($lokasi) {
         $query_ins = $db->prepare("REPLACE INTO absensi (nik, tanggal, jam_masuk, lokasi, jarak, keterangan) VALUES (?, ?, ?, ?, ?, 'hadir')");
         $query_ins->bind_param("ssssd", $data_karyawan['nik'], $tanggal_sekarang, $jam_sekarang, $koordinat, $jarak);
         $query_ins->execute();
+            require_once "../inc/calculator.php";
+            hitungDendaAbsensi($db, $data_karyawan['nik'], $tanggal_sekarang);
 
         $query_del = $db->prepare("DELETE FROM state WHERE no_hp = ? AND tanggal = ?");
         $query_del->bind_param("ss", $id_pengirim, $tanggal_sekarang);
