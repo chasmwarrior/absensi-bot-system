@@ -86,21 +86,21 @@ server {
     # Rewrite rules similar to .htaccess
     location @rewrite {
         # Redirect /home to index.php
-        rewrite ^/home/?$ /index.php last;
+        rewrite ^/home/?\$ /index.php last;
 
         # Remove trailing slash to check if .php exists
-        rewrite ^/(.*)/$ /$1;
+        rewrite ^/(.*)/\$ /\$1;
 
         # If file exists as .php, rewrite to it
-        if (-f $document_root$uri.php) {
-            rewrite ^(.*)$ $1.php last;
+        if (-f \$document_root\$uri.php) {
+            rewrite ^(.*)\$ /\$1.php last;
         }
     }
 
     # Block direct access to certain directories
     location ^~ /app/ {
         # Allow webhooks
-        location ~* (webhook_telegram\.php|webhook_whatsapp\.php)$ {
+        location ~* (webhook_telegram\.php|webhook_whatsapp\.php)\$ {
             include snippets/fastcgi-php.conf;
             fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
         }
@@ -111,7 +111,7 @@ server {
         deny all;
     }
 
-    location ~ \.php$ {
+    location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
@@ -122,7 +122,7 @@ server {
     location ~ /\.(?!well-known).* {
         deny all;
     }
-    location ~ ^/(config\.php|koneksi\.php)$ {
+    location ~ ^/(config\.php|koneksi\.php)\$ {
         deny all;
     }
 }
