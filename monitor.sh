@@ -33,6 +33,15 @@ check_port_80() {
     fi
 }
 
+control_services() {
+    ACTION=$1
+    echo "--- ${ACTION}ing Services ---"
+    systemctl $ACTION nginx
+    systemctl $ACTION php${PHP_VER}-fpm
+    systemctl $ACTION mariadb
+    echo "Done."
+}
+
 while true; do
     echo "==============================================="
     echo "   ABSENSI BOT SYSTEM - MONITORING & LOGS      "
@@ -43,9 +52,12 @@ while true; do
     echo "4. View PHP-FPM Error Log (Last 100 lines)"
     echo "5. View MySQL/MariaDB Error Log"
     echo "6. Test Web Server Response"
-    echo "7. Quit"
+    echo "7. START All Services"
+    echo "8. STOP All Services"
+    echo "9. RESTART All Services"
+    echo "10. Quit"
     echo "==============================================="
-    read -p "Select an option [1-7]: " choice
+    read -p "Select an option [1-10]: " choice
 
     case $choice in
         1)
@@ -82,6 +94,15 @@ while true; do
             echo ""
             ;;
         7)
+            control_services start
+            ;;
+        8)
+            control_services stop
+            ;;
+        9)
+            control_services restart
+            ;;
+        10)
             echo "Exiting."
             break
             ;;

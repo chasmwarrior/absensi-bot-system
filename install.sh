@@ -49,6 +49,14 @@ systemctl enable mariadb || true
 echo "Creating database if it doesn't exist..."
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" || echo "Failed to create DB. Proceeding..."
 
+echo "Configuring dedicated database user..."
+DB_APP_USER="absensi_app"
+DB_APP_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 12)
+mysql -u root -e "CREATE USER IF NOT EXISTS '${DB_APP_USER}'@'localhost' IDENTIFIED BY '${DB_APP_PASS}';"
+mysql -u root -e "ALTER USER '${DB_APP_USER}'@'localhost' IDENTIFIED BY '${DB_APP_PASS}';"
+mysql -u root -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_APP_USER}'@'localhost';"
+mysql -u root -e "FLUSH PRIVILEGES;"
+
 echo "[5/8] Deploying application files..."
 echo "Copying files to $WEB_DIR..."
 mkdir -p $WEB_DIR
