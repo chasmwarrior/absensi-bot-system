@@ -72,7 +72,7 @@ server {
     index index.php index.html index.htm;
 
     location / {
-        try_files $uri $uri/ @rewrite;
+        try_files \$uri \$uri/ @rewrite;
     }
 
     # Rewrite rules similar to .htaccess
@@ -81,8 +81,8 @@ server {
         rewrite ^/home$ /index.php last;
 
         # If file exists as .php, rewrite to it (removes need for .php extension in URLs)
-        if (-f $document_root$uri.php) {
-            rewrite ^(.*)$ $1.php last;
+        if (-f \$document_root\$uri.php) {
+            rewrite ^(.*)$ \$1.php last;
         }
     }
 
@@ -103,7 +103,7 @@ server {
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php${PHP_VER}-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
@@ -128,6 +128,7 @@ chmod -R 755 $WEB_DIR
 
 echo "[8/8] Restarting Nginx and PHP-FPM..."
 systemctl restart php${PHP_VER}-fpm
+nginx -t
 systemctl restart nginx
 
 echo "==============================================="
