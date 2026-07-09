@@ -9,11 +9,8 @@ echo "==============================================="
 echo ""
 
 echo "[1/8] Cleaning up previous installations (Fresh Install)..."
-# Stop services if running
-systemctl stop apache2 2>/dev/null || true
-systemctl stop mysql 2>/dev/null || true
-systemctl stop mariadb 2>/dev/null || true
-systemctl stop nginx 2>/dev/null || true
+# Start DB services to ensure we can drop the database
+systemctl start mariadb 2>/dev/null || systemctl start mysql 2>/dev/null || true
 
 # Remove previous web directory
 WEB_DIR="/var/www/html/absensi"
@@ -22,8 +19,6 @@ if [ -d "$WEB_DIR" ]; then
     rm -rf $WEB_DIR
 fi
 
-# Optionally, if the user really wants a fresh start, drop the database
-# Note: Dropping the database will erase all data.
 DB_NAME="absensi_chatbot"
 if command -v mysql &> /dev/null; then
     echo "Dropping existing database if it exists..."
@@ -45,7 +40,7 @@ fi
 apt-get install -y apache2 mariadb-server php libapache2-mod-php php-mysql php-cli php-curl php-json php-mbstring unzip git
 
 echo "[4/8] Configuring Database..."
-# Start MariaDB service if not running
+# Ensure MariaDB service is running
 systemctl start mariadb || service mysql start || true
 systemctl enable mariadb || true
 
@@ -77,8 +72,10 @@ systemctl restart apache2 || true
 echo "==============================================="
 echo "   INSTALLATION COMPLETE!                      "
 echo "==============================================="
+# Output IP properly
+IP_ADDR=$(hostname -I | awk '{print $1}')
 echo "You can now access the system at:"
-echo "http://\$(hostname -I | awk '{print \$1}')/absensi"
+echo "http://${IP_ADDR}/absensi"
 echo ""
 echo "Default Login:"
 echo "Username: admin"
