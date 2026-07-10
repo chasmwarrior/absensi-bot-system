@@ -147,12 +147,17 @@ if (isset($_POST['import_data'])) {
                     <h1>Data Karyawan</h1>
                 </div>
                 <div class="col-sm-6 text-right">
+
                     <button class="btn btn-tosca shadow-sm" data-toggle="modal" data-target="#modalTambah">
                         <i class="fas fa-user-plus mr-1"></i> Tambah Karyawan
+                    </button>
+                    <button class="btn btn-danger shadow-sm" onclick="konfirmasiHapusSemua()">
+                        <i class="fas fa-trash mr-1"></i> Hapus Semua
                     </button>
                     <button class="btn btn-success shadow-sm" data-toggle="modal" data-target="#modalImport">
                         <i class="fas fa-file-import mr-1"></i> Import CSV
                     </button>
+
                 </div>
             </div>
         </div>
